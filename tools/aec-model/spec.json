@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "repository": "https://github.com/breizhn/DTLN-aec",
+    "commit": "9d24e128b4f409db18227b8babb343016625921f",
+    "license": "MIT"
+  },
+  "recipe": {
+    "python": "3.11.15",
+    "uv": "0.12.22",
+    "system": "Darwin",
+    "machine": "arm64",
+    "opset": 18,
+    "packages": {
+      "tensorflow": "2.16.2",
+      "tf2onnx": "1.16.1",
+      "onnx": "1.17.0",
+      "onnxruntime": "1.20.1",
+      "numpy": "1.26.4"
+    }
+  },
+  "contract": {
+    "sampleRate": 16000,
+    "blockSize": 512,
+    "hopSize": 128,
+    "outputs": [
+      "Identity",
+      "Identity_1"
+    ],
+    "inputNames": [
+      [
+        "input_3",
+        "input_5",
+        "input_4"
+      ],
+      [
+        "input_6",
+        "input_8",
+        "input_7"
+      ]
+    ],
+    "signalSizes": [
+      257,
+      512
+    ]
+  },
+  "licenseSource": {
+    "path": "LICENSE",
+    "name": "LICENSE-DTLN-aec",
+    "size": 1075,
+    "sha256": "aa95acd8c8a7341bfcdb2823694dcbb27a2a4143e860bb52db1ff0f29c85e5a1"
+  },
+  "graphFingerprintVersion": 1,
+  "crossRuntimeTolerance": 0.0001,
+  "variants": {
+    "128": {
+      "sources": [
+        {
+          "path": "pretrained_models/dtln_aec_128_1.tflite",
+          "name": "dtln_aec_128_1.tflite",
+          "size": 1996600,
+          "sha256": "8d241b3a732af8ca140b2e30043e56a6c3c7800c46e22c26f4eea2f70974ad1e"
+        },
+        {
+          "path": "pretrained_models/dtln_aec_128_2.tflite",
+          "name": "dtln_aec_128_2.tflite",
+          "size": 5277012,
+          "sha256": "350bb01a1152ae3cabe09fe5e868ef2f7d8b988a9f22aae44f140195f6493126"
+        }
+      ],
+      "expectedGraphs": [
+        [
+          "b5258a820de0b981b1e14b5f49cad00c43c501d691a61a9cc66bffd39d844cce:0",
+          "fa19c483f5c5602df12d963f520a4de331987d82ca919c19aba86f74ec6406e1:0"
+        ],
+        [
+          "82ebdc9f5d58586db3039d7a6d7b958d2f8538b15c919d3bc515270e121ad983:0",
+          "84ef14596c8aab1ac64affcefa028d9bf05c76a860a04d2c4aad23637d065ca5:0"
+        ]
+      ]
+    },
+    "256": {
+      "sources": [
+        {
+          "path": "pretrained_models/dtln_aec_256_1.tflite",
+          "name": "dtln_aec_256_1.tflite",
+          "size": 5544248,
+          "sha256": "4a3a588b69fd79d837bc068b579a26faa92cac39dddbb00001d2dc1c3d869d60"
+        },
+        {
+          "path": "pretrained_models/dtln_aec_256_2.tflite",
+          "name": "dtln_aec_256_2.tflite",
+          "size": 9999700,
+          "sha256": "fa2590243aad1bf893c5be45b20709e8c50feec65e3604d1d52bae6eeddc23d3"
+        }
+      ],
+      "expectedGraphs": [
+        [
+          "ea9b9c3447311184dd5d2341aed09e40f62b2d982b085fe9c3413914c95ac676:0",
+          "5bf04d062a714b739091473483728eee63c6845a966a69caeb1f044e34806e3d:0"
+        ],
+        [
+          "8b2e261d93803c706266a70d4b182bf572e5328d7c2abd3fdfe7c8ab0115039d:0",
+          "8d4d17b6f44cdd0a9085fc181f1278b82f642bab9a3e9259b4f70d2bf476c913:0"
+        ]
+      ]
+    },
+    "512": {
+      "sources": [
+        {
+          "path": "pretrained_models/dtln_aec_512_1.tflite",
+          "name": "dtln_aec_512_1.tflite",
+          "size": 17358136,
+          "sha256": "569f7c3cfac96b1e093229c3ca10b5d892f5b1906105b644e457f8245b4f7383"
+        },
+        {
+          "path": "pretrained_models/dtln_aec_512_2.tflite",
+          "name": "dtln_aec_512_2.tflite",
+          "size": 24163668,
+          "sha256": "fb423d867ab25d5f4716bd369c7126b6c84926175c019b832e71bf21de0e9907"
+        }
+      ],
+      "expectedGraphs": [
+        [
+          "656ac398f028e5429e489de59fe765251128806acfc539ae9edbd8a7df353cdf:0",
+          "91baf6f7f24cc91395c6bc98e4cf5bc09e20d8d12be6f0c4ae422f00e9f2efcb:0"
+        ],
+        [
+          "390cdb629da0662158d9f425b32ff651c051668a3f36b6b2a0256751e1717746:0",
+          "c3432825ca059639a97f96b4725bb70d26a50fefee8e56eeb1152254cc344e6b:0"
+        ]
+      ]
+    }
+  }
+}

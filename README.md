@@ -35,6 +35,25 @@ python -m tf2onnx.convert --tflite dtln_aec_<size>_<stage>.tflite --opset 18 --o
 
 All model weights/graph topology, tensor interfaces, finite non-silent inference and explicit recurrent-state reset were checked. Generated internal node names can affect serialized ONNX SHA across independent conversions: published assets have fixed hashes, while independent rebuild equivalence must also consider graph/weight identity. The pipeline does not train new weights or depend on anarlog artifacts.
 
+## Maintainer tooling in this repository
+
+This repository owns the whole TFLite-to-ONNX pipeline: conversion, artifact gates, independent re-verification and Draft-only publishing. The VoiceInsight application repository contains no conversion code and no Python environment; it only downloads these published artifacts through its native Rust downloader.
+
+```text
+tools/aec-model/   builder.py, release.mjs, spec.json, pyproject.toml, uv.lock, license, docs
+scripts/aec-model.mjs   local CLI entry (build / verify / publish)
+tests/aec-model.test.mjs   Node regression (npm test, node --test)
+```
+
+```bash
+npm test                                                  # Node regression, no network, no model needed
+npm run model:aec:build -- --variant 256 --version 1.0.0
+npm run model:aec:verify -- --variant 256 --version 1.0.0 --directory /absolute/path/to/bundle
+npm run model:aec:publish -- --variant 256 --version 1.0.0 --directory /absolute/path/to/bundle --repo quyao/voiceinsight-models --target <40-hex-commit> --dry-run
+```
+
+`build` requires macOS arm64 and uv 0.12.22 (it creates a locked private Python 3.11 environment under `tools/aec-model/.venv`); `verify` and `publish` reuse that environment and never download or re-convert models. Every run writes `test-results/aec-model-<time>-<uuid>/` and nothing is overwritten. Publishing creates a new **Draft** release only, requires the explicit `--confirm-draft --acknowledge-limitations` confirmations, verifies remote asset size/SHA-256, and never makes a release public, overwrites an existing tag/release or runs retries-to-pass. There are no GitHub Actions or remote builders. `spec.json`, `builder.py`, `pyproject.toml` and `uv.lock` are hashed into each published `manifest.json`, so these four files must stay byte-identical; `verify` rejects a bundle if they change. Full details and trust boundaries: [`tools/aec-model/README.md`](tools/aec-model/README.md), execution record: [`tools/aec-model/VALIDATION.md`](tools/aec-model/VALIDATION.md).
+
 ## Evaluation boundary and known failures
 
 2026-10-05 local comparison on Apple M1 Max: 12 fixed, SHA-checked public-English diagnostic scenarios; 3 fresh-state repetitions per size, the same production neural alignment/reset/priming, Silero/SenseVoice path and unchanged quality thresholds. Includes near/quiet speech, double talk, synthetic delayed/nonlinear echoes and two measured Surrey room impulse responses. No live microphone capture. These are already-seen diagnostic clips, not unseen-speaker validation.

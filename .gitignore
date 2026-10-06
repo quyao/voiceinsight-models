@@ -1,0 +1,7 @@
+# Local build/verify/publish runs (summary.json, logs, converted bundles).
+# Only an inspected bundle is ever uploaded, and only as an explicit Draft release.
+test-results/
+
+node_modules/
+
+.DS_Store
