@@ -2,6 +2,7 @@
 # Only an inspected bundle is ever uploaded, and only as an explicit Draft release.
 test-results/
 
-node_modules/
+__pycache__/
+*.pyc
 
 .DS_Store

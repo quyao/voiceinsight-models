@@ -1,6 +1,8 @@
 # 本地验证记录 — 2026-10-05
 
-> **迁移说明（2026-10-06）**：本文件与工具一起从应用仓库 `quyao/voiceinsight` 的 `tools/aec-model/` 原样迁入 `quyao/voiceinsight-models`。下文记录的是拆分前在应用仓库中执行的验证：其中的 `npm test -- unit runner`、`npm test -- check` 指的是当时应用仓库的统一测试入口，当时工具回归挂在那个 runner 里。迁移后本仓库用自带的 `npm test`（`node --test`）覆盖同样的回归；工具文件（`spec.json`、`builder.py`、`pyproject.toml`、`uv.lock`）逐字节未改，SHA-256 与已发布制品 manifest 中的 `toolHashes` 一致。以下历史结论不改写。
+> **迁移说明（2026-10-06）**：本文件与工具一起从应用仓库 `quyao/voiceinsight` 的 `tools/aec-model/` 原样迁入 `quyao/voiceinsight-models`。下文记录的是拆分前在应用仓库中执行的验证：其中的 `npm test -- unit runner`、`npm test -- check` 指的是当时应用仓库的统一测试入口，当时工具回归挂在那个 runner 里。迁移后本仓库用自己的回归覆盖同样的用例；工具文件（`spec.json`、`builder.py`、`pyproject.toml`、`uv.lock`）逐字节未改，SHA-256 与已发布制品 manifest 中的 `toolHashes` 一致。以下历史结论不改写。
+>
+> **纯 Python 化（2026-10-06）**：原先的 Node 入口与回归（`package.json`、`scripts/aec-model.mjs`、`tools/aec-model/release.mjs`、`tests/aec-model.test.mjs`）已改写为纯标准库 Python（`tools/aec-model/release.py`、`tools/aec-model/cli.py`、`tests/test_aec_model.py`），仓库不再需要 Node/npm；四个被哈希的工具文件保持不变，已发布制品的 `toolHashes` 仍匹配。本轮验证：`python3 -m unittest discover -s tests` 18 项 PASS；对已发布 `aec-dtln-256-v1.0.0` 制品跑真实 `cli.py verify` PASS；`cli.py publish --dry-run` PASS（`networkCalls:0`）。真实 Draft 上传未在本轮执行。
 
 > 下文为最初256单规格工具的历史验证。后续已扩展128/256/512、按用户授权公开发布模型预发布版本并接入应用。历史的“未发布/未接入”描述仅对应本轮早期状态，不代表当前状态。2026-10-05 的 AEC 研究环境与产物已删除，本文只保留检查项和结论。
 

@@ -8,7 +8,7 @@
 
 - 唯一模型上游：`breizhn/DTLN-aec`，固定提交 `9d24e128b4f409db18227b8babb343016625921f`。两份作者权重及MIT许可按固定大小/SHA-256验证。
 - 生成制品不需要 anarlog、应用安装目录、实验目录中的模型或会议数据。原始模型不放进Git。
-- `spec.json` 固定接口、opset、工具版本、作者来源及经过先前独立评估的权重/计算图指纹。这个静态基准是显式版本契约，不自动从上游最新文件重新学习。这四个工具文件（`spec.json`、`builder.py`、`pyproject.toml`、`uv.lock`）的 SHA-256 也被写进每个已发布制品的 `manifest.json`，必须逐字节保持，不能为了迁移或“整理”而重写。
+- `spec.json` 固定接口、opset、工具版本、作者来源及经过先前独立评估的权重/计算图指纹。这个静态基准是显式版本契约，不自动从上游最新文件重新学习。这四个工具文件（`spec.json`、`builder.py`、`pyproject.toml`、`uv.lock`）的 SHA-256 也被写进每个已发布制品的 `manifest.json`，必须逐字节保持，不能为了迁移或“整理”而重写。纯标准库的 `release.py` 与 `cli.py` 刻意不在这四个文件里，可以直接演进。
 - `pyproject.toml` 固定直接依赖；`uv.lock` 锁定完整依赖解析及下载文件哈希。构建使用 `uv sync --locked --no-dev --no-build`，不运行sdist构建、不自动更新锁文件。
 - 第一版维护者环境限定 **macOS arm64、uv 0.12.22、Python 3.11.15**。工具不自动升级全局uv；uv可准备指定Python及工具目录下的私有 `.venv`。这不是应用/ONNX制品仅支持macOS的声明；其他构建平台尚未验证。
 - ONNX是**VoiceInsight维护的转换制品**，不是作者直接发布的“官方ONNX”。保留 `DTLN-LICENSE`，发布包带原始许可和明确的NOTICE。
@@ -18,7 +18,7 @@
 在本仓库根目录执行。`--variant` 必填，只接受 `128`、`256`、`512`，构建、复验、发布都必须显式传入；文件名、状态形状和发布tag按规格隔离，不跨规格推断或回退：
 
 ```bash
-npm run model:aec:build -- --variant 256 --version 1.0.0
+python3 tools/aec-model/cli.py build --variant 256 --version 1.0.0
 ```
 
 流程：创建独立本地运行目录 → 锁定Python环境 → 下载三份固定公开文件 → SHA/大小校验 → 转换两阶段ONNX → 模型门禁 → 生成manifest → 再次读取实际制品验证 → 完整bundle就绪。
@@ -63,7 +63,7 @@ test-results/aec-model-<time>-<uuid>/
 ## 2. 独立复验
 
 ```bash
-npm run model:aec:verify -- --variant 256 --version 1.0.0 --directory /absolute/path/to/bundle
+python3 tools/aec-model/cli.py verify --variant 256 --version 1.0.0 --directory /absolute/path/to/bundle
 ```
 
 要求已有锁定的工具环境；**不下载文件、不重新转换、不导入TensorFlow**。它会读取真实ONNX，重新核验图/参数、接口和循环状态，而非只相信JSON中的 `mandatoryGatesPassed`。修改参数后即使同步伪造文件哈希和报告哈希，也会被固定语义指纹拒绝。
@@ -73,7 +73,7 @@ npm run model:aec:verify -- --variant 256 --version 1.0.0 --directory /absolute/
 ## 3. 发布预检（零GitHub请求）
 
 ```bash
-npm run model:aec:publish -- \
+python3 tools/aec-model/cli.py publish \
   --variant 256 \
   --version 1.0.0 \
   --directory /absolute/path/to/bundle \
@@ -91,7 +91,7 @@ Dry-run不需要GitHub认证，也不调用gh或GitHub。它在私有临时快�
 确认预检、模型许可/NOTICE、目标仓库与提交后，维护者使用自己已配置的GitHub CLI认证：
 
 ```bash
-npm run model:aec:publish -- \
+python3 tools/aec-model/cli.py publish \
   --variant 256 \
   --version 1.0.0 \
   --directory /absolute/path/to/bundle \
@@ -122,12 +122,12 @@ npm run model:aec:publish -- \
 - 发布快照仅含六份公共制品，不上传源码缓存、日志、安装环境、音频、转录或应用私有数据。
 - 本工具生成/发布模型不影响正在使用的应用模型。应用通过受信任的固定资产清单原生下载，三规格使用各自文件和SHA；安装时持有与模型加载共享的文件锁，普通提交错误恢复旧文件，中断造成的缺失配对报错、不换规格。旧128隐式回退已经移除。
 
-本仓库自带 Node 回归，直接运行 `npm test`（`node --test`，不需要项目测试 runner、模型或网络）：
+本仓库自带回归，只依赖标准库 `unittest`，不需要模型、网络或项目测试 runner：
 
 ```bash
-npm test
+python3 -m unittest discover -s tests -v
 ```
 
 新增测试覆盖路径/版本/资产边界、checksum与语义复验调用、伪造报告、快照变更、dry-run零调用、已有release/tag、鉴权与权限错误、Draft-only上传、远端digest失败、中断/超时和进程后代清理。发布网络流程使用模拟客户端，不能称为真实GitHub上传验证。
 
-本次实际执行记录见 [VALIDATION.md](VALIDATION.md)。普通应用用户不需要Python、uv或gh来安装已发布的模型；这些仅是维护者工具。Node 只用于本地入口与回归，应用本身不依赖它。
+本次实际执行记录见 [VALIDATION.md](VALIDATION.md)。普通应用用户不需要 Python、uv 或 gh 来安装已发布的模型；这三样仅是维护者工具：`python3` 跑标准库入口与回归，`uv` 准备锁定的转换环境，`gh` 只在真实发布时使用。

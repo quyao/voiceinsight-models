@@ -40,19 +40,21 @@ All model weights/graph topology, tensor interfaces, finite non-silent inference
 This repository owns the whole TFLite-to-ONNX pipeline: conversion, artifact gates, independent re-verification and Draft-only publishing. The VoiceInsight application repository contains no conversion code and no Python environment; it only downloads these published artifacts through its native Rust downloader.
 
 ```text
-tools/aec-model/   builder.py, release.mjs, spec.json, pyproject.toml, uv.lock, license, docs
-scripts/aec-model.mjs   local CLI entry (build / verify / publish)
-tests/aec-model.test.mjs   Node regression (npm test, node --test)
+tools/aec-model/   builder.py, release.py, cli.py, spec.json, pyproject.toml, uv.lock, license, docs
+tests/test_aec_model.py   standard-library unittest regression (no network, no model needed)
 ```
 
 ```bash
-npm test                                                  # Node regression, no network, no model needed
-npm run model:aec:build -- --variant 256 --version 1.0.0
-npm run model:aec:verify -- --variant 256 --version 1.0.0 --directory /absolute/path/to/bundle
-npm run model:aec:publish -- --variant 256 --version 1.0.0 --directory /absolute/path/to/bundle --repo quyao/voiceinsight-models --target <40-hex-commit> --dry-run
+python3 -m unittest discover -s tests -v                        # regression only; never touches GitHub or models
+python3 tools/aec-model/cli.py build   --variant 256 --version 1.0.0
+python3 tools/aec-model/cli.py verify  --variant 256 --version 1.0.0 --directory /absolute/path/to/bundle
+python3 tools/aec-model/cli.py publish --variant 256 --version 1.0.0 --directory /absolute/path/to/bundle \
+    --repo quyao/voiceinsight-models --target <40-hex-commit> --dry-run
 ```
 
-`build` requires macOS arm64 and uv 0.12.22 (it creates a locked private Python 3.11 environment under `tools/aec-model/.venv`); `verify` and `publish` reuse that environment and never download or re-convert models. Every run writes `test-results/aec-model-<time>-<uuid>/` and nothing is overwritten. Publishing creates a new **Draft** release only, requires the explicit `--confirm-draft --acknowledge-limitations` confirmations, verifies remote asset size/SHA-256, and never makes a release public, overwrites an existing tag/release or runs retries-to-pass. There are no GitHub Actions or remote builders. `spec.json`, `builder.py`, `pyproject.toml` and `uv.lock` are hashed into each published `manifest.json`, so these four files must stay byte-identical; `verify` rejects a bundle if they change. Full details and trust boundaries: [`tools/aec-model/README.md`](tools/aec-model/README.md), execution record: [`tools/aec-model/VALIDATION.md`](tools/aec-model/VALIDATION.md).
+Everything is Python with no third-party packages: only the standard library runs `cli.py`, and the model work happens in the pinned `tools/aec-model/.venv`.
+
+`build` requires macOS arm64 and uv 0.12.22 (it creates a locked private Python 3.11 environment under `tools/aec-model/.venv`); `verify` and `publish` reuse that environment and never download or re-convert models. Every run writes `test-results/aec-model-<time>-<uuid>/` and nothing is overwritten. Publishing creates a new **Draft** release only, requires the explicit `--confirm-draft --acknowledge-limitations` confirmations, verifies remote asset size/SHA-256, and never makes a release public, overwrites an existing tag/release or runs retries-to-pass. There are no GitHub Actions or remote builders. `spec.json`, `builder.py`, `pyproject.toml` and `uv.lock` are hashed into each published `manifest.json`, so these four files must stay byte-identical; `verify` rejects a bundle if they change. The standard-library `release.py` and `cli.py` are deliberately outside that set. Full details and trust boundaries: [`tools/aec-model/README.md`](tools/aec-model/README.md), execution record: [`tools/aec-model/VALIDATION.md`](tools/aec-model/VALIDATION.md).
 
 ## Evaluation boundary and known failures
 
